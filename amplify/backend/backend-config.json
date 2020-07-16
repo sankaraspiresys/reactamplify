@@ -1,0 +1,39 @@
+{
+	"api": {
+		"postsapi": {
+			"service": "AppSync",
+			"providerPlugin": "awscloudformation",
+			"output": {
+				"authConfig": {
+					"additionalAuthenticationProviders": [],
+					"defaultAuthentication": {
+						"authenticationType": "AMAZON_COGNITO_USER_POOLS",
+						"userPoolConfig": {
+							"userPoolId": "authreactamplifyfc713946"
+						}
+					}
+				}
+			}
+		}
+	},
+	"auth": {
+		"reactamplifyfc713946": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [],
+			"customAuth": false
+		}
+	},
+	"hosting": {
+		"S3AndCloudFront": {
+			"service": "S3AndCloudFront",
+			"providerPlugin": "awscloudformation"
+		}
+	},
+	"storage": {
+		"postimages": {
+			"service": "S3",
+			"providerPlugin": "awscloudformation"
+		}
+	}
+}

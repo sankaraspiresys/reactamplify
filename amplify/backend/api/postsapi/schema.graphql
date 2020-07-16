@@ -1,0 +1,20 @@
+type Post @model @auth(rules: [{ allow: owner, queries: null, ownerField: "createdBy"}]){
+  id: ID!
+  title: String!
+  description: String
+  clientId: ID
+  imageUrl: String
+  createdBy: String
+  comments: [Comment] @connection(name: "PostComments")
+}
+
+
+type Comment @model @auth(rules: [
+  { allow: owner, ownerField: "createdBy", operations: [create, update, delete]},
+  { allow: private, operations: [read] }
+  ]) {
+  id: ID!
+  message: String
+  createdBy: String
+  post: Post @connection(name: "PostComments")
+}
