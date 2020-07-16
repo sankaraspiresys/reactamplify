@@ -330,12 +330,12 @@ button {
   margin-right: 0.6rem;
 }
 
-/* Landing Page */
+/* Landing Page
 .landing {
   position: relative;
   background: url('') no-repeat center center/cover;
   height: 100vh;
-}
+} */
 
 .landing-inner {
   color: #fff;
@@ -578,6 +578,10 @@ button {
     width: 100%;
     max-width: 400px;
     height: auto;
+  }
+
+  .modal-dialog {
+    max-width: none;
   }
 
 }

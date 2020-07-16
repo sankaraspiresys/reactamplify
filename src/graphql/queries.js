@@ -11,6 +11,23 @@ export const getPost = /* GraphQL */ `
       imageUrl
       createdBy
       comments {
+        items {
+          id
+          message
+          createdBy
+          post {
+            id
+            title
+            description
+            clientId
+            imageUrl
+            createdBy
+            createdAt
+            updatedAt
+          }
+          createdAt
+          updatedAt
+        }
         nextToken
       }
       createdAt
@@ -32,6 +49,16 @@ export const listPosts = /* GraphQL */ `
         clientId
         imageUrl
         createdBy
+        comments {
+          items {
+            id
+            message
+            createdBy
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -52,6 +79,16 @@ export const getComment = /* GraphQL */ `
         clientId
         imageUrl
         createdBy
+        comments {
+          items {
+            id
+            message
+            createdBy
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -71,6 +108,19 @@ export const listComments = /* GraphQL */ `
         id
         message
         createdBy
+        post {
+          id
+          title
+          description
+          clientId
+          imageUrl
+          createdBy
+          comments {
+            nextToken
+          }
+          createdAt
+          updatedAt
+        }
         createdAt
         updatedAt
       }

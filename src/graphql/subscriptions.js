@@ -11,6 +11,23 @@ export const onCreatePost = /* GraphQL */ `
       imageUrl
       createdBy
       comments {
+        items {
+          id
+          message
+          createdBy
+          post {
+            id
+            title
+            description
+            clientId
+            imageUrl
+            createdBy
+            createdAt
+            updatedAt
+          }
+          createdAt
+          updatedAt
+        }
         nextToken
       }
       createdAt
@@ -28,6 +45,23 @@ export const onUpdatePost = /* GraphQL */ `
       imageUrl
       createdBy
       comments {
+        items {
+          id
+          message
+          createdBy
+          post {
+            id
+            title
+            description
+            clientId
+            imageUrl
+            createdBy
+            createdAt
+            updatedAt
+          }
+          createdAt
+          updatedAt
+        }
         nextToken
       }
       createdAt
@@ -45,6 +79,23 @@ export const onDeletePost = /* GraphQL */ `
       imageUrl
       createdBy
       comments {
+        items {
+          id
+          message
+          createdBy
+          post {
+            id
+            title
+            description
+            clientId
+            imageUrl
+            createdBy
+            createdAt
+            updatedAt
+          }
+          createdAt
+          updatedAt
+        }
         nextToken
       }
       createdAt
@@ -65,6 +116,16 @@ export const onCreateComment = /* GraphQL */ `
         clientId
         imageUrl
         createdBy
+        comments {
+          items {
+            id
+            message
+            createdBy
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -86,6 +147,16 @@ export const onUpdateComment = /* GraphQL */ `
         clientId
         imageUrl
         createdBy
+        comments {
+          items {
+            id
+            message
+            createdBy
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         createdAt
         updatedAt
       }
@@ -107,6 +178,16 @@ export const onDeleteComment = /* GraphQL */ `
         clientId
         imageUrl
         createdBy
+        comments {
+          items {
+            id
+            message
+            createdBy
+            createdAt
+            updatedAt
+          }
+          nextToken
+        }
         createdAt
         updatedAt
       }

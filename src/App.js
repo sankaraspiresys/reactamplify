@@ -4,7 +4,7 @@ import './App.css';
 import { Auth } from 'aws-amplify';
 import { withAuthenticator } from 'aws-amplify-react'
 
-import Bootstrap, { Modal } from 'bootstrap-4-react';
+import { Modal } from 'bootstrap-4-react';
 
 // imports from Amplify library
 import { Storage, API, graphqlOperation } from 'aws-amplify'
@@ -14,9 +14,9 @@ import {v1 as uuid} from 'uuid'
 import config from './aws-exports'
 
 // import query definition
-import { listPosts as ListPosts } from './graphql/queries'
+import { listPosts as ListPosts, getPost as GetPost } from './graphql/queries'
 // import the mutation
-import { createPost as CreatePost,  deletePost as DeletePost, updatePost as UpdatePost} from './graphql/mutations'
+import { createPost as CreatePost,  deletePost as DeletePost, updatePost as UpdatePost, createComment as CreateComment, deleteComment as DeleteComment} from './graphql/mutations'
 // import the subscription
 import { onCreatePost, onDeletePost, onUpdatePost} from './graphql/subscriptions'
 
@@ -41,7 +41,10 @@ class App extends React.Component {
     id: null,
     fileName: '',
     file: '',
-    fileInputKey: Date.now()
+    fileInputKey: Date.now(),
+    postIdForComment: '',
+    comments: [],
+    comment: ''
   }
 
   // execute the query in componentDidMount
@@ -171,6 +174,26 @@ class App extends React.Component {
   }
   /******* Update Post  ********/
 
+  createComment = async () =>{
+    const { postIdForComment, comment } = this.state;
+    if (postIdForComment === '' || comment === '') return
+
+    try {
+      await API.graphql(graphqlOperation(CreateComment, { input: {commentPostId: postIdForComment, message: comment} }))
+            .then(comment => {
+              console.log(comment)
+              console.log('Comment created!')
+              const comments = [...this.state.comments, comment.data.createComment]
+              this.setState({
+                comments, comment: ''
+              })
+              this.componentDidMount();
+            })
+    } catch (err) {
+      console.log('error creating post...', err)
+    }
+  }
+ 
   onChange = (event) => {
     this.setState({
       [event.target.name]: event.target.value
@@ -184,7 +207,7 @@ class App extends React.Component {
 
   async delete(postId){
     try{
-      const deletedPostData = await API.graphql(graphqlOperation(DeletePost, { input: {id: postId} }))
+      await API.graphql(graphqlOperation(DeletePost, { input: {id: postId} }))
       const filteredPosts = this.state.posts.filter( p => {
         if(p.id != postId)
           return p;
@@ -198,8 +221,25 @@ class App extends React.Component {
     }
   }
 
+  async deleteComment(commentId){
+    try{
+      await API.graphql(graphqlOperation(DeleteComment, { input: {id: commentId} }))
+      const filteredComments = this.state.comments.filter( c => {
+        if(c.id != commentId)
+          return c;
+      })
+      this.setState({
+        comments: filteredComments
+      })
+      this.componentDidMount();
+    }
+    catch(err){
+      console.log('error deleting comment...', err)
+    }
+  }
+
   edit(post){
-    console.log(post)
+    //console.log(post)
     this.setState({
       title: post.title,
       description: post.description,
@@ -225,8 +265,17 @@ class App extends React.Component {
       fileName: fileForUpload.name.split(".")[0],
       file: fileForUpload || value
     })
+  }
 
-    
+  async loadComments(postId){
+    this.setState({
+      postIdForComment: postId
+    })
+    const postDatawithComments = await API.graphql(graphqlOperation(GetPost, {id: postId}));
+
+    this.setState({
+      comments: postDatawithComments.data.getPost.comments.items
+    })
   }
 
 
@@ -242,7 +291,7 @@ class App extends React.Component {
          Hello  {this.state.userName} !
         </li>
         <li>
-          <a title="Logout">
+          <a href="" title="Logout">
             <i className="fas fa-sign-out-alt" onClick={this.signOut}></i>
             <span className="hide-sm" onClick={this.signOut}>Logout</span></a
           >
@@ -320,14 +369,14 @@ class App extends React.Component {
                       </>
                       : ""
                       }
-                      <a  data-toggle="modal" data-target="#commentsModal" class="btn btn-primary">
-                        Comments <span class='comment-count'>3</span>
+                      <a  data-toggle="modal" onClick={ () => this.loadComments(post.id) } data-target="#commentsModal" className="btn btn-info">
+                        Comments <span className='comment-count'>{post.comments.items.length}</span>
                       </a>
                   </div>
               </div>
               ))
             }
-          </div>
+          </div> 
           <Modal id="commentsModal" fade>
               <Modal.Dialog centered>
                 <Modal.Content>
@@ -338,6 +387,39 @@ class App extends React.Component {
                     </Modal.Close>
                   </Modal.Header>
                   <Modal.Body>
+                  <div className="post-form">
+                    <div >
+                      <h3>Leave A Comment</h3>
+                    </div>
+                      <textarea
+                        name="comment"
+                        cols="50"
+                        rows="5"
+                        placeholder="Comment on this post"
+                        required
+                        onChange={this.onChange}
+                        value = { this.state.comment }
+                      ></textarea><br />
+                      <button className="btn btn-dark my-1" onClick={this.createComment}>Submit</button>
+                    </div>
+                  { this.state.comments.map((comment, index) => (
+                    <div key={index} className="post bg-white p-1 my-1">
+                      <div className="row">
+                        <p className="col-sm-6">
+                          {comment.message}
+                          <br /><span className="post-date">
+                            Created By: {comment.createdBy}
+                          </span>
+                        </p>
+                        { this.state.userName === comment.createdBy ? 
+                          <button type="button" size="sm" className="btn btn-secondary" onClick={ () => this.deleteComment(comment.id) }>
+                          <i className="fas fa-times"></i>
+                          </button>
+                          : ""
+                        }
+                      </div>
+                    </div>
+                  )) }
                     
                   </Modal.Body>
                 </Modal.Content>
