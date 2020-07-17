@@ -108,9 +108,11 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-    this.subscriptionOnCreate.unsubscribe();
-    this.subscriptionOnDelete.unsubscribe();
-    this.subscriptionOnUpdate.unsubscribe();
+    if(this.subscriptionOnCreate != undefined && this.subscriptionOnDelete != undefined && this.subscriptionOnUpdate != undefined){
+      this.subscriptionOnCreate.unsubscribe();
+      this.subscriptionOnDelete.unsubscribe();
+      this.subscriptionOnUpdate.unsubscribe();
+    }
   }
 
   /******* Creating Post  ********/
@@ -279,6 +281,26 @@ class App extends React.Component {
   }
 
 
+  async listEditors(limit){
+    
+    let nextToken;
+    let apiName = 'AdminQueries';
+    let path = '/listUsersInGroup';
+    let myInit = { 
+        queryStringParameters: {
+          "groupname": "admin",
+          "limit": limit
+        },
+        headers: {
+          'Content-Type' : 'application/json',
+          Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+        }
+    }
+    const { NextToken, ...rest } =  await API.get(apiName, path, myInit);
+    nextToken = NextToken;
+    return rest;
+  }
+
   render() {
     return (
       <Fragment>
@@ -408,7 +430,7 @@ class App extends React.Component {
                         <p className="col-sm-6">
                           {comment.message}
                           <br /><span className="post-date">
-                            Created By: {comment.createdBy}
+                            Created By: {comment.createdBy} 
                           </span>
                         </p>
                         { this.state.userName === comment.createdBy ? 
@@ -425,6 +447,7 @@ class App extends React.Component {
                 </Modal.Content>
               </Modal.Dialog>
             </Modal>
+            <button onClick={() => this.listEditors(10)}>List Editors</button>
         </section>
       </Fragment>
     )
