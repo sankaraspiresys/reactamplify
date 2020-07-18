@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import '../App.css';
 import { Auth } from 'aws-amplify';
-import { withAuthenticator } from 'aws-amplify-react'
 
 import { Modal, Table} from 'bootstrap-4-react';
 import Tabs from 'react-bootstrap/Tabs'
@@ -25,10 +24,17 @@ import { onCreatePost, onDeletePost, onUpdatePost} from '../graphql/subscription
 class User extends React.Component {
     state = {
         adminUsers: [],
-        editorUsers: []
+        editorUsers: [],
+        userGroup: []
     }
 
     async componentDidMount() {
+        const user = await Auth.currentAuthenticatedUser()
+        const userPayload = user.signInUserSession.accessToken.payload;
+        this.setState({
+            userGroup: userPayload["cognito:groups"]
+          })
+
         this.listAdmins();
         this.listEditors();
     }
@@ -56,7 +62,7 @@ class User extends React.Component {
         this.setState({
             adminUsers: rest.Users
         })
-        console.log(rest);
+        //console.log(rest);
         return rest;
     }
 
@@ -79,10 +85,58 @@ class User extends React.Component {
         this.setState({
             editorUsers: rest.Users
         })
-        console.log(rest);
+      console.log(rest.Users);
         return rest;
     }
 
+    async enableUser(userName){
+        let apiName = 'AdminQueries';
+        let path = '/enableUser';
+        let myInit = {
+            body: {
+                "username" : userName
+            }, 
+            headers: {
+                'Content-Type' : 'application/json',
+                Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+            } 
+        }
+        await API.post(apiName, path, myInit);
+        return this.componentDidMount();
+    }
+
+    async disableUser(userName){
+        let apiName = 'AdminQueries';
+        let path = '/disableUser';
+        let myInit = {
+            body: {
+                "username" : userName
+            }, 
+            headers: {
+                'Content-Type' : 'application/json',
+                Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+            } 
+        }
+        await API.post(apiName, path, myInit);
+        return this.componentDidMount();
+    }
+
+    async setAsAdmin(userName) { 
+        let apiName = 'AdminQueries';
+        let path = '/addUserToGroup';
+        let myInit = {
+            body: {
+              "username" : userName,
+              "groupname": "admin"
+            }, 
+            headers: {
+              'Content-Type' : 'application/json',
+              Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+            } 
+        }
+        await API.post(apiName, path, myInit);
+        return this.componentDidMount();
+      }
 
 
     render(){
@@ -96,12 +150,12 @@ class User extends React.Component {
                     <li>
                     <Link to="/">Home</Link>
                     </li>
-                    <li><Link to="/users">Users</Link></li>
+                    { this.state.userGroup != undefined && this.state.userGroup.indexOf('admin') != -1 && <li><Link to="/users">Users</Link></li>}
                     
                     <li>
-                        <a href="" title="Logout">
+                        <p title="Logout">
                         <i className="fas fa-sign-out-alt" onClick={this.signOut}></i>
-                        <span className="hide-sm" onClick={this.signOut}>Logout</span></a
+                        <span className="hide-sm" onClick={this.signOut}>Logout</span></p
                         >
                     </li>
                 </ul>
@@ -129,11 +183,11 @@ class User extends React.Component {
                                         <td>{admin.Enabled === true ? "Enabled": "Disabled"}</td>
                                         <td>{admin.UserCreateDate}</td>
                                         <td>
-                                            { admin.Enabled && <button className="btn btn-success" title="Enable User" onClick={this.createPost}>
+                                            { !admin.Enabled && <button className="btn btn-sm btn-success" title="Enable User" onClick={() => this.enableUser(admin.Username)}>
                                                 <i className="fas fa-play"></i>
                                                 </button>
                                             }
-                                            <button className="btn btn-danger" title="Disable User" onClick={this.updatePost}>
+                                            <button className="btn btn-sm btn-danger" title="Disable User" onClick={() => this.disableUser(admin.Username)}>
                                                 <i className="fas fa-power-off "></i>
                                             </button>
                                         </td>
@@ -165,12 +219,16 @@ class User extends React.Component {
                                         <td>{admin.Enabled === true ? "Enabled": "Disabled"}</td>
                                         <td>{admin.UserCreateDate}</td>
                                         <td>
-                                            { admin.Enabled && <button className="btn btn-success" title="Enable User" onClick={this.createPost}>
+                                            { !admin.Enabled && <button className="btn btn-sm btn-success" title="Enable User" onClick={() => this.enableUser(admin.Username)}>
                                                 <i className="fas fa-play"></i>
                                                 </button>
                                             }
-                                            <button className="btn btn-danger" title="Disable User" onClick={this.updatePost}>
+                                            { admin.Enabled && <button className="btn btn-sm btn-danger" title="Disable User" onClick={() => this.disableUser(admin.Username)}>
                                                 <i className="fas fa-power-off "></i>
+                                            </button> }
+
+                                            <button className="btn btn-sm btn-info" title="Add to Admin Group" onClick={() => this.setAsAdmin(admin.Username)}>
+                                                Set as Admin
                                             </button>
                                         </td>
                                         </tr>
@@ -186,4 +244,4 @@ class User extends React.Component {
     }
 }
 
-export default withAuthenticator(User, { includeGreetings: false })
+export default User;

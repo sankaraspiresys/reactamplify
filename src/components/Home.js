@@ -2,7 +2,6 @@ import React, { Fragment } from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import '../App.css';
 import { Auth } from 'aws-amplify';
-import { withAuthenticator } from 'aws-amplify-react'
 
 import { Modal } from 'bootstrap-4-react';
 
@@ -112,11 +111,11 @@ class Home extends React.Component {
 
   
     componentWillUnmount() {
-        if(this.subscriptionOnCreate != undefined && this.subscriptionOnDelete != undefined && this.subscriptionOnUpdate != undefined){
+       // if(this.subscriptionOnCreate != undefined && this.subscriptionOnDelete != undefined && this.subscriptionOnUpdate != undefined){
           this.subscriptionOnCreate.unsubscribe();
           this.subscriptionOnDelete.unsubscribe();
           this.subscriptionOnUpdate.unsubscribe();
-        }
+      //  }
     }
     /******* Creating Post  ********/
     createPost = async() => {
@@ -319,9 +318,9 @@ class Home extends React.Component {
             </li>
             { this.state.userGroup != undefined && this.state.userGroup.indexOf('admin') != -1 && <li><Link to="/users">Users</Link></li>}
             <li>
-                <a href="" title="Logout">
+                <p title="Logout">
                 <i className="fas fa-sign-out-alt" onClick={this.signOut}></i>
-                <span className="hide-sm" onClick={this.signOut}>Logout</span></a
+                <span className="hide-sm" onClick={this.signOut}>Logout</span></p
                 >
             </li>
         </ul>
@@ -462,4 +461,5 @@ class Home extends React.Component {
     }
   }
   
-  export default withAuthenticator(Home, { includeGreetings: false })
+
+export default Home;
