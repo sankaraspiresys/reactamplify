@@ -136,7 +136,24 @@ class User extends React.Component {
         }
         await API.post(apiName, path, myInit);
         return this.componentDidMount();
-      }
+    }
+
+    async removeAdminAccess(userName) { 
+        let apiName = 'AdminQueries';
+        let path = '/removeUserFromGroup';
+        let myInit = {
+            body: {
+              "username" : userName,
+              "groupname": "admin"
+            }, 
+            headers: {
+              'Content-Type' : 'application/json',
+              Authorization: `${(await Auth.currentSession()).getAccessToken().getJwtToken()}`
+            } 
+        }
+        await API.post(apiName, path, myInit);
+        return this.componentDidMount();
+    }
 
 
     render(){
@@ -160,7 +177,7 @@ class User extends React.Component {
                     </li>
                 </ul>
                 </nav>
-                <Tabs style={{ width: "80%", margin: "auto", marginTop: "30px"}} defaultActiveKey="admins" id="uncontrolled-tab-example">
+                <Tabs transition={false} style={{ width: "80%", margin: "auto", marginTop: "30px"}} defaultActiveKey="admins" id="uncontrolled-tab-example">
                     <Tab eventKey="admins" title="Admins">
                         <Table style={{ width: "80%", margin: "auto", marginTop: "30px", fontSize: "13px"}} striped bordered hover size="sm">
                             <thead>
@@ -189,6 +206,9 @@ class User extends React.Component {
                                             }
                                             <button className="btn btn-sm btn-danger" title="Disable User" onClick={() => this.disableUser(admin.Username)}>
                                                 <i className="fas fa-power-off "></i>
+                                            </button>
+                                            <button className="btn btn-sm btn-info" title="Add to Admin Group" onClick={() => this.removeAdminAccess(admin.Username)}>
+                                                Remove Admin Access
                                             </button>
                                         </td>
                                         </tr>
@@ -230,6 +250,7 @@ class User extends React.Component {
                                             <button className="btn btn-sm btn-info" title="Add to Admin Group" onClick={() => this.setAsAdmin(admin.Username)}>
                                                 Set as Admin
                                             </button>
+                                             
                                         </td>
                                         </tr>
                                     ))

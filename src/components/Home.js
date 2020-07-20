@@ -44,7 +44,8 @@ class Home extends React.Component {
       postIdForComment: '',
       comments: [],
       comment: '',
-      userGroup: []
+      userGroup: [],
+      invalidImageType : false
     }
   
     // execute the query in componentDidMount
@@ -128,9 +129,22 @@ class Home extends React.Component {
         const key = `images/${uuid()}${this.state.fileName}.${extension}`      
         var url = `https://${bucket}.s3.${region}.amazonaws.com/public/${key}`
         //var url = `http://localhost:20005/public/${key}`
-        await Storage.put(key, this.state.file, {
-          contentType: mimeType
-        })
+
+        const allowedExtensions = [ 'jpg', 'jpeg', 'png', 'svg', 'gif' ];
+        if(allowedExtensions.includes(extension) === true){
+          await Storage.put(key, this.state.file, {
+            contentType: mimeType
+          })
+          this.setState({
+            invalidImageType: false
+          })
+        }else{
+          this.setState({
+            invalidImageType: true
+          })
+          return;
+        }
+        
       }else{
         var url = "";
       }
@@ -341,12 +355,13 @@ class Home extends React.Component {
                   value={this.state.title}
                   placeholder='Title'
                 />
-                 <input
+                <input
                 type="file"
                 key={this.state.fileInputKey}
                 onChange={this.handleChange.bind(this)}
                 style={{margin: '10px 0px'}}
                 /> 
+                {this.state.invalidImageType && <span style={{ color: 'red'}}> Invalid image type! Allowed types are (jpg, jpeg, png, svg, gif) </span>}
                 <textarea
                     type="text"
                     name='description'

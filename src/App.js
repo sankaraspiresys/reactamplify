@@ -10,6 +10,7 @@ import { withAuthenticator } from 'aws-amplify-react'
 
 import User from './components/User';
 import Home from './components/Home';
+/* import Album from './components/Album'; */
 
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
@@ -47,6 +48,8 @@ class App extends React.Component {
           <Switch>
             <Route exact path="/" component={Home} />
             <ProtectedRoute exact path="/users" component={User} />
+           {/*  <Route exact path="/albums" component={Album} /> */}
+           <Route  path="/" component={Home} />
           </Switch>
         </Router>
       </Suspense>
